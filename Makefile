@@ -10,16 +10,31 @@ openssl:
 	git clone -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl
 
 openssl/Makefile: openssl
+ifeq ($(PLATFORM),android)
 	cd openssl && PATH=$(PATH) \
     ./Configure \
 			no-comp no-dtls no-ec2m no-psk no-srp no-ssl2 no-ssl3 \
 			no-camellia no-idea no-md2 no-md4 no-mdc2 no-rc2 no-rc4 no-rc5 no-rmd160 no-whirlpool \
 			no-dso no-hw no-ui-console \
 			no-shared no-unit-test \
-			android-$(NDK_ABI) \
+			$(OPENSSL_TARGET) \
 			-D__ANDROID_API__=$(NDK_PLATFORM_LEVEL) \
 			--prefix=/ \
 			--openssldir=/
+else ifeq ($(PLATFORM),iphoneos)
+	cd openssl && PATH=$(PATH) \
+    ./Configure \
+			no-comp no-dtls no-ec2m no-psk no-srp no-ssl2 no-ssl3 \
+			no-camellia no-idea no-md2 no-md4 no-mdc2 no-rc2 no-rc4 no-rc5 no-rmd160 no-whirlpool \
+			no-dso no-hw no-ui-console \
+			no-shared no-unit-test \
+			$(OPENSSL_TARGET) \
+			--prefix=/ \
+			--openssldir=/
+else
+	echo "UNSUPPORTED PLATFORM"
+	exit 1
+endif
 
 openssl-build: openssl/Makefile
 	PATH=$(PATH) \
@@ -62,6 +77,7 @@ tor:
 
 tor/Makefile: tor libevent-build openssl-build
 	cd tor && ./autogen.sh
+ifeq ($(PLATFORM),android)
 	cd tor && ./configure \
 		--host=$(ALTHOST) \
 		--enable-android \
@@ -73,6 +89,21 @@ tor/Makefile: tor libevent-build openssl-build
 		--enable-static-libevent --with-libevent-dir=$(EXTERNAL_ROOT) \
 		--enable-static-openssl --with-openssl-dir=$(EXTERNAL_ROOT) \
 		--disable-asciidoc
+else ifeq ($(PLATFORM),iphoneos)
+	cd tor && ./configure \
+		--host=$(ALTHOST) \
+		--enable-pic \
+		--enable-restart-debugging \
+		--disable-zstd \
+		--disable-lzma \
+		--disable-tool-name-check \
+		--enable-static-libevent --with-libevent-dir=$(EXTERNAL_ROOT) \
+		--enable-static-openssl --with-openssl-dir=$(EXTERNAL_ROOT) \
+		--disable-asciidoc
+else
+	echo "UNSUPPORTED PLATFORM"
+	exit 1
+endif
 
 orconfig.h: tor/Makefile
 	bash fixup-orconfig.sh > orconfig.h
