@@ -1,6 +1,6 @@
 EXTERNAL_ROOT := $(shell pwd)
 
-include android32.mk
+include io64.mk
 
 export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig/:$(PKG_CONFIG_PATH)
 
