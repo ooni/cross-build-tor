@@ -1,6 +1,6 @@
 EXTERNAL_ROOT := $(shell pwd)
 
-include android64.mk
+include android32.mk
 
 export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig/:$(PKG_CONFIG_PATH)
 
@@ -25,6 +25,14 @@ openssl-build: openssl/Makefile
 	PATH=$(PATH) \
 		make -C openssl install_dev DESTDIR=$(EXTERNAL_ROOT)
 
+openssl-clean:
+	-rm openssl-build-stamp
+	-rm lib/libcrypto.a
+	-rm lib/libssl.a
+	-make -C openssl uninstall_dev > /dev/null
+	-make -C openssl clean
+	-cd openssl && \
+		git clean -fdx > /dev/null
 
 libevent:
 	git clone -b release-2.1.11-stable https://github.com/libevent/libevent.git
@@ -40,6 +48,14 @@ libevent/Makefile: libevent
 
 libevent-build: libevent/Makefile
 	make -C libevent install DESTDIR=$(EXTERNAL_ROOT)
+
+libevent-clean:
+	-rm -f lib/libevent.a
+	-rm -f libevent-build-stamp
+	-$(MAKE) -C libevent uninstall DESTDIR=$(EXTERNAL_ROOT)
+	-$(MAKE) -C libevent clean
+	-cd libevent && \
+		git clean -fdx > /dev/null
 
 tor:
 	git clone -b release-0.4.6 https://git.torproject.org/tor.git
@@ -60,3 +76,8 @@ tor/Makefile: tor libevent-build openssl-build
 
 orconfig.h: tor
 	bash fixup-orconfig.sh > orconfig.h
+
+orconfig.h-clean:
+	-rm orconfig.h
+
+clean: openssl-clean libevent-clean orconfig.h-clean
