@@ -4,7 +4,7 @@ include android32.mk
 
 export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig/:$(PKG_CONFIG_PATH)
 
-.PHONY = openssl-build
+.PHONY = openssl-build libevent-build tor/Makefile
 
 openssl:
 	git clone -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl
@@ -52,8 +52,8 @@ libevent-build: libevent/Makefile
 libevent-clean:
 	-rm -f lib/libevent.a
 	-rm -f libevent-build-stamp
-	-$(MAKE) -C libevent uninstall DESTDIR=$(EXTERNAL_ROOT)
-	-$(MAKE) -C libevent clean
+	-make -C libevent uninstall DESTDIR=$(EXTERNAL_ROOT)
+	-make -C libevent clean
 	-cd libevent && \
 		git clean -fdx > /dev/null
 
@@ -74,7 +74,7 @@ tor/Makefile: tor libevent-build openssl-build
 		--enable-static-openssl --with-openssl-dir=$(EXTERNAL_ROOT) \
 		--disable-asciidoc
 
-orconfig.h: tor
+orconfig.h: tor/Makefile
 	bash fixup-orconfig.sh > orconfig.h
 
 orconfig.h-clean:
