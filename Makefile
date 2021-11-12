@@ -1,6 +1,8 @@
 EXTERNAL_ROOT := $(shell pwd)
 
-include ios32.mk
+ifdef TARGET_PLATFORM
+	include $(TARGET_PLATFORM).mk
+endif
 
 export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig/:$(PKG_CONFIG_PATH)
 

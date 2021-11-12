@@ -11,5 +11,12 @@ changes to the repo.
 
 ```
 make clean
-make orconfig.h
+TARGET_PLATFORM=android32 make orconfig.h
 ```
+
+The currently supported `TARGET_PLATFORM` values are:
+
+  * `android32`
+  * `android64`
+  * `ios32`
+  * `ios64`
