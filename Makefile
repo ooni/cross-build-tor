@@ -4,7 +4,8 @@ ifdef TARGET_PLATFORM
 	include $(TARGET_PLATFORM).mk
 endif
 
-export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig/:$(PKG_CONFIG_PATH)
+export PKG_CONFIG_PATH := $(EXTERNAL_ROOT)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+export CPATH := $(EXTERNAL_ROOT)/include:$(CPATH)
 
 .PHONY = openssl-build libevent-build tor/Makefile
 
@@ -52,11 +53,13 @@ openssl-clean:
 		git clean -fdx > /dev/null
 
 libevent:
-	git clone -b release-2.1.11-stable https://github.com/libevent/libevent.git
+	git clone https://github.com/libevent/libevent.git
+	git checkout 0c217f4fe1af6efdb99321401da6f4048398065f
 
 libevent/Makefile: libevent
 	cd libevent && ./autogen.sh
 	cd libevent && ./configure \
+		PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 		--host=$(ALTHOST) \
 		--disable-libevent-regress \
 		--disable-samples \
